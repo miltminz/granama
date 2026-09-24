@@ -41,6 +41,7 @@ def load_solver(spec: str):
     target, func = spec.rsplit(":", 1)
     if target.endswith(".py"):
         module_spec = importlib.util.spec_from_file_location("_bench_solver", target)
+        assert module_spec and module_spec.loader
         module = importlib.util.module_from_spec(module_spec)
         module_spec.loader.exec_module(module)
     else:

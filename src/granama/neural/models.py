@@ -6,6 +6,7 @@ Gated models (e.g. ``google/embeddinggemma-300m``) need ``HF_TOKEN`` and an acce
 """
 
 from collections.abc import Sequence
+from typing import Any
 
 DEFAULT_FLUENCY_MODEL = "HuggingFaceTB/SmolLM2-135M"
 DEFAULT_RELEVANCE_MODEL = "Snowflake/snowflake-arctic-embed-m-v1.5"
@@ -15,11 +16,11 @@ MISSING_EXTRA = "neural ranking needs the lm extra: pip install 'granama[lm]'"
 def _torch():
     try:
         import torch
-        import transformers
+        from transformers.utils import logging
     except ImportError as exc:
         raise ImportError(MISSING_EXTRA) from exc
-    transformers.logging.set_verbosity_error()
-    transformers.utils.logging.disable_progress_bar()
+    logging.set_verbosity_error()
+    logging.disable_progress_bar()
     return torch
 
 
@@ -42,10 +43,12 @@ class CausalLMFluency:
         torch = self._torch = _torch()
         from transformers import AutoModelForCausalLM, AutoTokenizer
 
+        auto_model: Any = AutoModelForCausalLM
+
         self.device = _device(torch, device)
         dtype = torch.float16 if self.device == "cuda" else torch.float32
-        self.tokenizer = AutoTokenizer.from_pretrained(model)
-        self.model = AutoModelForCausalLM.from_pretrained(model, dtype=dtype).to(self.device)
+        self.tokenizer: Any = AutoTokenizer.from_pretrained(model)
+        self.model: Any = auto_model.from_pretrained(model, dtype=dtype).to(self.device)
         self.model.eval()
         bos = self.tokenizer.bos_token_id
         self.start = [self.tokenizer.eos_token_id if bos is None else bos]
@@ -136,7 +139,7 @@ class EmbeddingRelevance:
         self.model = SentenceTransformer(model, device=self.device, trust_remote_code=True)
         if half and self.device == "cuda":
             self.model.half()
-        self.options = {
+        self.options: dict[str, Any] = {
             "normalize_embeddings": True,
             "prompt_name": prompt,
             "batch_size": batch_size,
@@ -146,6 +149,7 @@ class EmbeddingRelevance:
     def similarity(self, source: str, phrases: Sequence[str]) -> list[float]:
         if not phrases:
             return []
-        source_embedding = self.model.encode([source], **self.options)[0]
-        embeddings = self.model.encode(list(phrases), **self.options)
+        encode: Any = self.model.encode
+        source_embedding = encode([source], **self.options)[0]
+        embeddings = encode(list(phrases), **self.options)
         return (embeddings @ source_embedding).tolist()

@@ -36,4 +36,4 @@ def test_bundled_resources_exist(dictionary):
 
 
 def test_extra_tags_resource_exists():
-    assert "offensive-1" in read_resource(get_language("en").extra_tags_resource)
+    assert "offensive-1" in read_resource(get_language("en").extra_tags_resource or "")

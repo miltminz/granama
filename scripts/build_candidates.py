@@ -9,7 +9,6 @@ so an interrupted run resumes where it stopped.
 """
 
 import argparse
-import dataclasses
 import json
 import sys
 import time
@@ -46,8 +45,12 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--min-len", type=int, default=2, help="letters per word")
     parser.add_argument("--min-letters", type=int, default=8, help="skip shorter seeds")
     parser.add_argument("--max-letters", type=int, default=18, help="skip longer seeds")
-    parser.add_argument("--max-anagrams", type=int, default=300_000,
-                        help="skip seeds with more anagrams than this (ranking cost)")
+    parser.add_argument(
+        "--max-anagrams",
+        type=int,
+        default=300_000,
+        help="skip seeds with more anagrams than this (ranking cost)",
+    )
     parser.add_argument("--pool", type=int, default=1000)
     parser.add_argument("--limit", type=int, help="process at most N new seeds")
     args = parser.parse_args(argv)
@@ -75,7 +78,8 @@ def main(argv: list[str] | None = None) -> int:
             else:
                 # an anagram that reuses a word of the seed is no puzzle
                 anagrams = [
-                    words for words in generate_anagrams(seed, vocab, options)
+                    words
+                    for words in generate_anagrams(seed, vocab, options)
                     if not tokens.intersection(words)
                 ]
                 record["anagrams"] = len(anagrams)
@@ -84,8 +88,12 @@ def main(argv: list[str] | None = None) -> int:
                 elif anagrams:
                     ranked = ranker.rank(seed, anagrams, vocab, args.top)
                     record["candidates"] = [
-                        {"phrase": a.phrase, "score": round(a.score, 3),
-                         "fluency": round(a.fluency, 2), "relevance": round(a.relevance, 4)}
+                        {
+                            "phrase": a.phrase,
+                            "score": round(a.score, 3),
+                            "fluency": round(a.fluency, 2),
+                            "relevance": round(a.relevance, 4),
+                        }
                         for a in ranked
                     ]
             out.write(json.dumps(record, ensure_ascii=False) + "\n")
@@ -94,8 +102,11 @@ def main(argv: list[str] | None = None) -> int:
             note = record.get("skipped", f"{record.get('anagrams', 0)} anagrams")
             elapsed = time.time() - start
             eta = elapsed / n * (len(todo) - n)
-            print(f"[{n}/{len(todo)}] {seed!r}: {note}, best {best!r} "
-                  f"({time.time() - t:.1f}s, eta {eta / 60:.0f} min)", flush=True)
+            print(
+                f"[{n}/{len(todo)}] {seed!r}: {note}, best {best!r} "
+                f"({time.time() - t:.1f}s, eta {eta / 60:.0f} min)",
+                flush=True,
+            )
     return 0
 
 

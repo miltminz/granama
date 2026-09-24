@@ -30,6 +30,7 @@ dev = [
     "pytest>=8",
     "pytest-cov>=5",
     "ruff>=0.6",
+    "ty>=0.0.83",
 ]
 
 [tool.pytest.ini_options]
@@ -40,9 +41,18 @@ addopts = "-q"
 source = ["granama"]
 branch = true
 
+[tool.coverage.report]
+show_missing = true
+skip_covered = true
+fail_under = 85
+
 [tool.ruff]
 line-length = 100
 target-version = "py312"
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "B", "UP", "SIM", "RUF"]
+
+[tool.ty.analysis]
+# optional `lm` extra; not installed in CI
+allowed-unresolved-imports = ["numpy", "torch", "transformers", "transformers.**", "sentence_transformers"]

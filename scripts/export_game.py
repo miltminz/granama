@@ -44,15 +44,22 @@ def main() -> None:
     puzzles = []
     for line in args.selected.read_text().splitlines():
         d = json.loads(line)
-        puzzles.append({
-            "name": d["seed"],
-            "cat": cats.get(d["seed"], "famous person"),
-            "clues": [{"p": s["phrase"], "why": s["why"]} for s in d["selected"]],
-        })
+        puzzles.append(
+            {
+                "name": d["seed"],
+                "cat": cats.get(d["seed"], "famous person"),
+                "clues": [{"p": s["phrase"], "why": s["why"]} for s in d["selected"]],
+            }
+        )
 
     html = args.html.read_text()
-    html, n = re.subn(r'^const PUZZLES = .*;$', lambda _: f'const PUZZLES = decode("{encode(puzzles)}");',
-                      html, count=1, flags=re.M)
+    html, n = re.subn(
+        r"^const PUZZLES = .*;$",
+        lambda _: f'const PUZZLES = decode("{encode(puzzles)}");',
+        html,
+        count=1,
+        flags=re.M,
+    )
     if n != 1:
         raise SystemExit(f"no 'const PUZZLES = ...;' line in {args.html}")
     args.html.write_text(html)

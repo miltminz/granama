@@ -39,6 +39,7 @@ import statistics
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from pathlib import Path
+from typing import Any
 
 import numpy as np
 from eval_ranking import CASES
@@ -115,7 +116,8 @@ def save_scores(scorer: str, case: Case, **scores: np.ndarray) -> None:
     path = _path(scorer, case)
     path.parent.mkdir(parents=True, exist_ok=True)
     (path.parent / NAME_FILE).write_text(scorer)
-    np.savez(path, fingerprint=case.fingerprint, **scores)
+    arrays: dict[str, Any] = {"fingerprint": case.fingerprint, **scores}
+    np.savez(path, **arrays)
 
 
 def cached_scorers() -> list[str]:
@@ -197,7 +199,7 @@ def lm(
                 np.argsort(-first_pass(case, pool_from, embedder), kind="stable")[:pool]
             )
         texts, owner = [], []
-        for i in indices:
+        for i in indices.tolist():
             orders = sorted({" ".join(p) for p in itertools.permutations(case.anagrams[i])})
             texts += orders
             owner += [i] * len(orders)
@@ -206,13 +208,13 @@ def lm(
         for text, i, score in zip(texts, owner, scores, strict=True):
             if i not in best or score > best[i][0]:
                 best[i] = (score, text)
-        orders = [best[i][1] for i in indices]
+        orders = [best[i][1] for i in indices.tolist()]
         save_scores(
             scorer,
             case,
             pool=indices,
             order=np.array(orders),
-            fluency=np.array([best[i][0] for i in indices], np.float32),
+            fluency=np.array([best[i][0] for i in indices.tolist()], np.float32),
             conditional=np.array(
                 model.log_prob(orders, context=CONDITION.format(text=case.text)), np.float32
             ),
@@ -303,12 +305,14 @@ def report(top: int, show: int) -> None:
     if skipped:
         print("not in the table (missing cases):", ", ".join(skipped))
 
-    best = next((row for row in rows if row.score), None)
-    if show and best:
+    best = next((row for row in rows if row.score and row.lm), None)
+    if show and best and best.score and best.lm:
+        score_fn, lm_name = best.score, best.lm
         print(f"\ntop {show} of {best.name}:")
         for case in cases:
-            scores = best.score(case)
-            data = load_scores(best.lm, case)
+            scores = score_fn(case)
+            data = load_scores(lm_name, case)
+            assert data is not None
             order = dict(zip(data["pool"].tolist(), data["order"].tolist(), strict=True))
             top_ids = np.argsort(-scores, kind="stable")[:show]
             print(f"  {case.text}: " + " | ".join(order[i] for i in top_ids.tolist()))

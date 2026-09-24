@@ -3,6 +3,7 @@ from pathlib import Path
 
 SCRIPT = Path(__file__).resolve().parent.parent / "scripts" / "build_wordlist.py"
 spec = importlib.util.spec_from_file_location("build_wordlist", SCRIPT)
+assert spec and spec.loader
 build_wordlist = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(build_wordlist)
 
