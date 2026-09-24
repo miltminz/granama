@@ -1,0 +1,77 @@
+# Hand-curated usage tags for English. For a word listed here, these tags REPLACE the
+# dictionary's own tags; "none" clears them (to fix upstream false positives).
+# ESDB only tags "the worst offenders", so this adds slurs and vulgar words it misses.
+# Same scheme as ESDB (see its README, USAGE-NOTE):
+#   offensive-1  extremely offensive slurs
+#   offensive-2  offensive slurs with somewhat less stigma
+#   vulgar-1     swear words
+#   vulgar-3     mildly vulgar or taboo words
+# Deliberately NOT tagged, because a common harmless meaning dominates: chink, cock,
+# prick, pussy, tit, nip, cracker, mick, paddy, lame, hoe, bloody, sod, knob, cripple,
+# gypsy, midget, negro, redneck, gringo, nonce, bimbo, retarded.
+# Format: word<TAB>tag[,tag]  or  word<TAB>none
+#
+# Upstream false positives: ESDB tags these vulgar-3, but the harmless sense dominates.
+dickens	none
+dicker	none
+dickered	none
+dickering	none
+dickers	none
+#
+kike	offensive-1
+kikes	offensive-1
+spic	offensive-1
+spics	offensive-1
+gook	offensive-1
+gooks	offensive-1
+wetback	offensive-1
+wetbacks	offensive-1
+faggot	offensive-1
+faggots	offensive-1
+darkie	offensive-1
+dago	offensive-2
+dagos	offensive-2
+wog	offensive-2
+wogs	offensive-2
+yid	offensive-2
+yids	offensive-2
+honky	offensive-2
+honkies	offensive-2
+squaw	offensive-2
+gyp	offensive-2
+gypped	offensive-2
+dyke	offensive-2
+dykes	offensive-2
+fag	offensive-2
+fags	offensive-2
+homo	offensive-2
+homos	offensive-2
+poof	offensive-2
+poofs	offensive-2
+poofter	offensive-2
+retard	offensive-2
+retards	offensive-2
+spastic	offensive-2
+twat	vulgar-1
+twats	vulgar-1
+wank	vulgar-1
+wanks	vulgar-1
+wanked	vulgar-1
+wanking	vulgar-1
+wanker	vulgar-1
+wankers	vulgar-1
+slut	vulgar-3
+sluts	vulgar-3
+slutty	vulgar-3
+whore	vulgar-3
+whores	vulgar-3
+bitch	vulgar-3
+bitches	vulgar-3
+bastard	vulgar-3
+bastards	vulgar-3
+cum	vulgar-3
+spunk	vulgar-3
+bollocks	vulgar-3
+tosser	vulgar-3
+tossers	vulgar-3
+titty	vulgar-3

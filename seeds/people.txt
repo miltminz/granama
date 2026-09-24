@@ -1,0 +1,220 @@
+# Famous people, one per line. Seeds outside 8-18 letters are skipped by build_candidates.py.
+# science & invention
+Albert Einstein
+Isaac Newton
+Charles Darwin
+Marie Curie
+Nikola Tesla
+Thomas Edison
+Galileo Galilei
+Stephen Hawking
+Sigmund Freud
+Alan Turing
+Ada Lovelace
+Louis Pasteur
+Alexander Graham Bell
+Florence Nightingale
+Carl Sagan
+Richard Feynman
+Johannes Kepler
+Neil Armstrong
+Buzz Aldrin
+Yuri Gagarin
+Wright Brothers
+# art & literature
+Leonardo da Vinci
+Michelangelo
+Pablo Picasso
+Vincent van Gogh
+Salvador Dali
+Claude Monet
+Rembrandt
+Frida Kahlo
+Andy Warhol
+William Shakespeare
+Charles Dickens
+Jane Austen
+Mark Twain
+Ernest Hemingway
+Agatha Christie
+Edgar Allan Poe
+Oscar Wilde
+Leo Tolstoy
+Dante Alighieri
+Homer Simpson
+George Orwell
+Stephen King
+Virginia Woolf
+Emily Dickinson
+Franz Kafka
+Victor Hugo
+Jules Verne
+Lewis Carroll
+Roald Dahl
+Dr Seuss
+Arthur Conan Doyle
+Sherlock Holmes
+# music
+Wolfgang Amadeus Mozart
+Ludwig van Beethoven
+Johann Sebastian Bach
+Elvis Presley
+John Lennon
+Paul McCartney
+Ringo Starr
+George Harrison
+Bob Dylan
+Bob Marley
+Michael Jackson
+Madonna
+Freddie Mercury
+David Bowie
+Elton John
+Jimi Hendrix
+Kurt Cobain
+Frank Sinatra
+Louis Armstrong
+Taylor Swift
+Lady Gaga
+Beyonce
+Rihanna
+Justin Bieber
+Britney Spears
+Whitney Houston
+Aretha Franklin
+Mick Jagger
+Bruce Springsteen
+Amy Winehouse
+Ed Sheeran
+Adele
+Eminem
+Luciano Pavarotti
+Giuseppe Verdi
+# film & tv
+Charlie Chaplin
+Marilyn Monroe
+Audrey Hepburn
+Clint Eastwood
+John Wayne
+Alfred Hitchcock
+Steven Spielberg
+Stanley Kubrick
+Quentin Tarantino
+Martin Scorsese
+Tom Hanks
+Tom Cruise
+Brad Pitt
+Angelina Jolie
+Leonardo DiCaprio
+Meryl Streep
+Morgan Freeman
+Robert De Niro
+Al Pacino
+Johnny Depp
+Keanu Reeves
+Will Smith
+Harrison Ford
+Arnold Schwarzenegger
+Sylvester Stallone
+Bruce Lee
+Jackie Chan
+Oprah Winfrey
+Walt Disney
+Marlon Brando
+Humphrey Bogart
+Grace Kelly
+Elizabeth Taylor
+James Dean
+Scarlett Johansson
+Julia Roberts
+Nicole Kidman
+Emma Watson
+Daniel Radcliffe
+Mr Bean
+Rowan Atkinson
+Jim Carrey
+Robin Williams
+Eddie Murphy
+Clark Gable
+Sean Connery
+James Bond
+Harry Potter
+# politics & history
+Abraham Lincoln
+George Washington
+Winston Churchill
+Napoleon Bonaparte
+Julius Caesar
+Cleopatra
+Alexander the Great
+Genghis Khan
+Joan of Arc
+Queen Victoria
+Queen Elizabeth
+Nelson Mandela
+Mahatma Gandhi
+Martin Luther King
+Mother Teresa
+Barack Obama
+Donald Trump
+John Kennedy
+Theodore Roosevelt
+Franklin Roosevelt
+Benjamin Franklin
+Thomas Jefferson
+Margaret Thatcher
+Karl Marx
+Fidel Castro
+Che Guevara
+Christopher Columbus
+Marco Polo
+Vladimir Lenin
+Joseph Stalin
+Charles de Gaulle
+Princess Diana
+Prince Charles
+Pope Francis
+Dalai Lama
+Confucius
+Socrates
+Aristotle
+Plato
+Buddha
+Moses
+Jesus Christ
+Sun Tzu
+Machiavelli
+Robin Hood
+King Arthur
+# sport
+Muhammad Ali
+Michael Jordan
+Pele
+Diego Maradona
+Lionel Messi
+Cristiano Ronaldo
+Roger Federer
+Serena Williams
+Rafael Nadal
+Usain Bolt
+Tiger Woods
+Michael Phelps
+Babe Ruth
+Mike Tyson
+LeBron James
+Kobe Bryant
+Wayne Gretzky
+Ayrton Senna
+Michael Schumacher
+Lewis Hamilton
+Zinedine Zidane
+David Beckham
+# business & tech
+Bill Gates
+Steve Jobs
+Elon Musk
+Mark Zuckerberg
+Jeff Bezos
+Warren Buffett
+Henry Ford
+Coco Chanel

@@ -1,0 +1,503 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Granama</title>
+<style>
+:root {
+  --bg: #f7f6f2; --fg: #1d1d1f; --muted: #6b6b70; --line: #d6d4cc;
+  --tile: #ffffff; --tile-fg: #1d1d1f; --grey: #8a8a8f; --green: #4e9a5a;
+  --accent: #3d5a80; --dim: #e4e2da; --toast-bg: #1d1d1f; --toast-fg: #fff;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #151517; --fg: #ececee; --muted: #9a9aa0; --line: #37373b;
+    --tile: #232326; --tile-fg: #ececee; --grey: #4a4a4f; --green: #3f8a4c;
+    --accent: #8fb3de; --dim: #2b2b2f; --toast-bg: #ececee; --toast-fg: #151517;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #151517; --fg: #ececee; --muted: #9a9aa0; --line: #37373b;
+  --tile: #232326; --tile-fg: #ececee; --grey: #4a4a4f; --green: #3f8a4c;
+  --accent: #8fb3de; --dim: #2b2b2f; --toast-bg: #ececee; --toast-fg: #151517;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--bg); color: var(--fg);
+  font: 16px/1.4 system-ui, -apple-system, "Segoe UI", sans-serif; }
+button { font: inherit; color: inherit; cursor: pointer; }
+main { max-width: 720px; margin: 0 auto; padding: 0 16px 32px; }
+
+header { display: flex; align-items: center; gap: 8px; padding: 12px 0;
+  border-bottom: 1px solid var(--line); margin-bottom: 16px; }
+header h1 { margin: 0; font-size: 1.4rem; letter-spacing: .08em; flex: 1; }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+.seg button { border: 0; background: none; padding: 6px 12px; font-size: .9rem; }
+.seg button.on { background: var(--fg); color: var(--bg); }
+.icon { border: 1px solid var(--line); background: none; border-radius: 8px;
+  width: 34px; height: 34px; font-weight: 600; }
+
+.label { color: var(--muted); font-size: .8rem; text-transform: uppercase;
+  letter-spacing: .08em; text-align: center; margin: 0 0 8px; }
+
+/* rows of tiles: words never break, but whole words wrap if the row is too wide */
+.row { display: flex; flex-wrap: wrap; justify-content: center;
+  column-gap: calc(var(--t) * .55); row-gap: 6px; margin-bottom: 6px; }
+.word { display: flex; gap: 4px; padding: 2px; border-radius: 6px;
+  border: 2px solid transparent; }
+.word.solved { border-color: var(--green); }
+.tile { width: var(--t); height: var(--t); display: grid; place-items: center;
+  font-weight: 700; font-size: calc(var(--t) * .5); text-transform: uppercase;
+  background: var(--tile); color: var(--tile-fg); border: 2px solid var(--line);
+  border-radius: 4px; user-select: none; }
+.tile.filled { border-color: var(--muted); }
+.tile.locked { border-color: var(--green); color: var(--green); }
+.tile.g { background: var(--green); border-color: var(--green); color: #fff; }
+.tile.x { background: var(--grey); border-color: var(--grey); color: #fff; }
+.tile.flip { animation: flip .45s ease both; }
+@keyframes flip { 0% { transform: rotateX(0) } 50% { transform: rotateX(90deg) } 100% { transform: rotateX(0) } }
+.row.shake { animation: shake .35s; }
+@keyframes shake { 20%,60% { transform: translateX(-6px) } 40%,80% { transform: translateX(6px) } }
+
+/* the clue doubles as the letter bank */
+#clue { margin-bottom: 20px; }
+#clue .tile { background: var(--tile); border-color: var(--accent); cursor: pointer; }
+#clue .tile.used { background: var(--dim); border-color: var(--dim); color: var(--muted); cursor: default; }
+.keys { display: flex; justify-content: center; gap: 8px; margin-top: 8px; }
+.keys button { border: 1px solid var(--line); background: var(--tile); border-radius: 8px;
+  padding: 8px 16px; font-weight: 600; }
+
+#board { margin: 8px 0 16px; }
+.wrap #board .row { margin-bottom: 14px; }
+
+#hints { text-align: center; margin-bottom: 16px; }
+#hintBtn { border: 1px dashed var(--accent); color: var(--accent); background: none;
+  border-radius: 8px; padding: 6px 14px; }
+#hintBtn:disabled { opacity: .4; cursor: default; }
+#hintList { list-style: none; padding: 0; margin: 10px 0 0; color: var(--muted); }
+#hintList li { margin: 4px 0; }
+#hintList b { color: var(--fg); font-weight: 600; }
+
+#end { display: none; text-align: center; border: 1px solid var(--line);
+  border-radius: 12px; padding: 16px; }
+#end.show { display: block; }
+#end h2 { margin: 0 0 4px; font-size: 1.1rem; }
+#end .answer { font-size: 1.4rem; font-weight: 700; letter-spacing: .05em; margin: 6px 0; }
+#end .why { color: var(--muted); font-style: italic; margin: 0 0 12px; }
+#end button { border: 0; border-radius: 8px; padding: 8px 18px; margin: 4px;
+  background: var(--accent); color: var(--bg); font-weight: 600; }
+
+#toast { position: fixed; left: 50%; top: 72px; transform: translateX(-50%);
+  background: var(--toast-bg); color: var(--toast-fg); padding: 8px 14px; border-radius: 8px;
+  font-weight: 600; opacity: 0; pointer-events: none; transition: opacity .2s; }
+#toast.show { opacity: 1; }
+
+dialog { background: var(--bg); color: var(--fg); border: 1px solid var(--line);
+  border-radius: 12px; max-width: min(420px, calc(100vw - 32px)); padding: 20px; }
+dialog::backdrop { background: rgba(0,0,0,.45); }
+dialog h2 { margin-top: 0; }
+dialog .close { float: right; border: 0; background: none; font-size: 1.2rem; }
+.stats { display: flex; justify-content: space-around; text-align: center; margin: 12px 0; }
+.stats b { display: block; font-size: 1.5rem; }
+.stats span { font-size: .75rem; color: var(--muted); }
+.dist div { display: flex; align-items: center; gap: 6px; margin: 3px 0; font-size: .85rem; }
+.dist i { display: block; background: var(--grey); color: #fff; font-style: normal;
+  text-align: right; padding: 0 6px; min-width: 22px; border-radius: 3px; }
+.dist i.cur { background: var(--green); }
+@media (max-width: 420px) {
+  header h1 { font-size: 1.1rem; letter-spacing: .04em; }
+  .seg button { padding: 6px 8px; }
+}
+.demo { display: flex; gap: 4px; margin: 8px 0; --t: 32px; }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>GRANAMA</h1>
+    <div class="seg" role="group" aria-label="Mode">
+      <button id="modeDaily" class="on">Daily</button>
+      <button id="modePractice">Practice</button>
+    </div>
+    <button class="icon" id="statsBtn" aria-label="Statistics">▦</button>
+    <button class="icon" id="helpBtn" aria-label="How to play">?</button>
+  </header>
+
+  <p class="label" id="puzzleLabel">Unscramble into a famous name</p>
+  <section id="clue">
+    <div class="row" id="bank"></div>
+    <div class="keys">
+      <button id="backBtn" aria-label="Delete letter">⌫</button>
+      <button id="enterBtn">Enter</button>
+    </div>
+  </section>
+
+  <section id="board"></section>
+
+  <section id="hints">
+    <button id="hintBtn">Hint</button>
+    <ul id="hintList"></ul>
+  </section>
+
+  <section id="end">
+    <h2 id="endTitle"></h2>
+    <div class="answer" id="endAnswer"></div>
+    <p class="why" id="endWhy"></p>
+    <button id="shareBtn">Share</button>
+    <button id="nextBtn">Next puzzle</button>
+  </section>
+</main>
+
+<div id="toast"></div>
+
+<dialog id="help">
+  <button class="close" data-close aria-label="Close">✕</button>
+  <h2>How to play</h2>
+  <p>The clue is an anagram of a famous person's name. Rearrange <b>all</b> its letters to find
+    them in 6 guesses. The empty tiles show how long each word of the name is.</p>
+  <p>Type, or tap the clue's letters. Each guess must use every letter exactly once.</p>
+  <div class="demo"><div class="tile g">S</div><div class="tile x">O</div><div class="tile g">L</div><div class="tile x">V</div><div class="tile x">E</div></div>
+  <p>Green: right letter in the right place. A word turns fully green and gets a green border
+    once it's right, and it stays locked in for your next guesses.</p>
+  <p>Stuck? Hints reveal the category, another anagram, a nudge, then the first letters.</p>
+  <p>A new daily puzzle every day; Practice mode is unlimited.</p>
+</dialog>
+
+<dialog id="stats">
+  <button class="close" data-close aria-label="Close">✕</button>
+  <h2>Daily statistics</h2>
+  <div class="stats" id="statsNums"></div>
+  <div class="dist" id="statsDist"></div>
+</dialog>
+
+<script>
+// Puzzle data is XOR-scrambled + base64 (written by scripts/export_game.py) so answers
+// aren't readable in the page source. Obfuscation only, not security.
+const KEY = "granama";
+function decode(b64) {
+  const bytes = Uint8Array.from(atob(b64), (c, i) => c.charCodeAt(0) ^ KEY.charCodeAt(i % KEY.length));
+  return JSON.parse(new TextDecoder().decode(bytes));
+}
+const PUZZLES = decode("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");
+const MAX_GUESSES = 6;
+const EPOCH = new Date(2026, 8, 24); // day #1
+
+// ---------- helpers ----------
+const $ = id => document.getElementById(id);
+const norm = s => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+const wordsOf = s => norm(s).split(/\s+/).map(w => w.replace(/[^a-z]/g, "")).filter(Boolean);
+const store = {
+  get(k, d) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch { return d; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} },
+};
+function mulberry32(a) {
+  return () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a);
+    t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
+}
+// fixed shuffled order so consecutive days don't walk through the file's categories
+const ORDER = (() => { const r = mulberry32(1234), a = PUZZLES.map((_, i) => i);
+  for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(r() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
+  return a; })();
+function dayNumber() {
+  const now = new Date(), today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  return Math.round((today - EPOCH) / 864e5) + 1;
+}
+let toastTimer;
+function toast(msg, ms = 1600) {
+  const t = $("toast"); t.textContent = msg; t.classList.add("show");
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove("show"), ms);
+}
+
+// ---------- game state ----------
+let G; // current game
+
+function newGame(mode, idx, clueIdx = 0) {
+  const p = PUZZLES[idx];
+  const clue = p.clues[clueIdx];
+  const answer = wordsOf(p.name);
+  const clueWords = wordsOf(clue.p);
+  G = {
+    mode, idx, p, clue, answer,
+    flat: answer.join(""),
+    clueWords, bank: clueWords.join("").split(""),
+    guesses: [], hints: 0, done: false, won: false,
+    locked: new Set(),       // indices of solved answer words
+    slots: [],               // current row: bank index per letter slot, or null
+    day: mode === "daily" ? dayNumber() : null,
+  };
+  G.hintTexts = buildHints();
+  if (mode === "daily") {
+    const saved = store.get("granama-day-" + G.day, null);
+    if (saved && saved.idx === idx) {
+      G.hints = saved.hints;
+      for (const g of saved.guesses) applyGuess(g, false);
+    }
+  }
+  startRow();
+  render();
+}
+
+function buildHints() {
+  const h = [["Category", G.p.cat]];
+  for (const c of G.p.clues) if (c !== G.clue) h.push(["Also an anagram", c.p]);
+  h.push(["Nudge", G.clue.why]);
+  h.push(["First letters", G.answer.map(w => w[0].toUpperCase() + "·".repeat(w.length - 1)).join(" ")]);
+  return h;
+}
+
+// word index -> [start, end) in the flat answer
+function spans() {
+  let i = 0; return G.answer.map(w => [i, i += w.length]);
+}
+
+function startRow() {
+  G.slots = new Array(G.flat.length).fill(null);
+  if (G.done) return;
+  // prefill solved words so the player only rearranges what's left
+  const sp = spans();
+  for (const w of G.locked) {
+    for (let i = sp[w][0]; i < sp[w][1]; i++) G.slots[i] = takeBank(G.flat[i]);
+  }
+}
+function isLockedSlot(i) {
+  const sp = spans();
+  for (const w of G.locked) if (i >= sp[w][0] && i < sp[w][1]) return true;
+  return false;
+}
+function usedSet() { return new Set(G.slots.filter(s => s !== null)); }
+function takeBank(ch) {
+  const used = usedSet();
+  const j = G.bank.findIndex((c, k) => c === ch && !used.has(k));
+  return j < 0 ? null : j;
+}
+
+function typeBank(j) {
+  if (G.done || usedSet().has(j)) return;
+  const i = G.slots.findIndex(s => s === null);
+  if (i < 0) return;
+  G.slots[i] = j; render();
+}
+function typeLetter(ch) {
+  if (G.done) return;
+  const j = takeBank(ch);
+  if (j === null) { shake(); toast(`No “${ch.toUpperCase()}” left in the clue`); return; }
+  typeBank(j);
+}
+function backspace() {
+  if (G.done) return;
+  for (let i = G.slots.length - 1; i >= 0; i--) {
+    if (G.slots[i] !== null && !isLockedSlot(i)) { G.slots[i] = null; render(); return; }
+  }
+}
+function submit() {
+  if (G.done) return;
+  if (G.slots.some(s => s === null)) { shake(); toast("Use every letter"); return; }
+  const guess = G.slots.map(j => G.bank[j]).join("");
+  if (G.guesses.includes(guess)) { shake(); toast("Already tried"); return; }
+  applyGuess(guess, true);
+  startRow();
+  render(true);
+}
+
+function score(guess) {
+  return guess.split("").map((c, i) => c === G.flat[i]);
+}
+function applyGuess(guess, live) {
+  G.guesses.push(guess);
+  const s = score(guess);
+  spans().forEach(([a, b], w) => { if (s.slice(a, b).every(Boolean)) G.locked.add(w); });
+  if (s.every(Boolean)) { G.done = true; G.won = true; }
+  else if (G.guesses.length >= MAX_GUESSES) G.done = true;
+  if (live) { save(); if (G.done) finish(); }
+}
+function save() {
+  if (G.mode !== "daily") return;
+  store.set("granama-day-" + G.day, { idx: G.idx, guesses: G.guesses, hints: G.hints });
+}
+function finish() {
+  if (G.mode !== "daily") return;
+  const st = loadStats();
+  if (st.lastDay === G.day) return;
+  st.played++;
+  if (G.won) {
+    st.won++; st.dist[G.guesses.length - 1]++;
+    st.streak = st.lastWonDay === G.day - 1 ? st.streak + 1 : 1;
+    st.maxStreak = Math.max(st.maxStreak, st.streak);
+    st.lastWonDay = G.day;
+  } else st.streak = 0;
+  st.lastDay = G.day;
+  store.set("granama-stats", st);
+}
+function loadStats() {
+  return store.get("granama-stats", { played: 0, won: 0, streak: 0, maxStreak: 0,
+    dist: [0, 0, 0, 0, 0, 0], lastDay: null, lastWonDay: null });
+}
+
+function revealHint() {
+  if (G.hints >= G.hintTexts.length || G.done) return;
+  G.hints++; save(); renderHints();
+}
+
+// ---------- rendering ----------
+function tile(ch, cls = "") {
+  const d = document.createElement("div");
+  d.className = "tile " + cls; d.textContent = ch || ""; return d;
+}
+function wordRow(letters, lengths, classFn, wordClassFn) {
+  const row = document.createElement("div"); row.className = "row";
+  let i = 0;
+  lengths.forEach((len, w) => {
+    const word = document.createElement("div");
+    word.className = "word " + (wordClassFn ? wordClassFn(w) : "");
+    for (let k = 0; k < len; k++, i++) word.append(classFn(letters[i], i));
+    row.append(word);
+  });
+  return row;
+}
+
+function sizeTiles() {
+  const avail = document.querySelector("main").clientWidth - 32;
+  const longest = Math.max(G.flat.length + (G.answer.length - 1) * .7,
+                           G.bank.length + (G.clueWords.length - 1) * .7);
+  const fit = n => Math.floor((avail - n * 5) / n); // 5 ≈ per-tile gap + word padding
+  let t = fit(longest);
+  const wrap = t < 28; // too cramped on one line: let words wrap and size by the longest word
+  if (wrap) t = fit(Math.max(...G.answer.map(w => w.length), ...G.clueWords.map(w => w.length)));
+  document.documentElement.style.setProperty("--t", Math.max(24, Math.min(46, t)) + "px");
+  document.body.classList.toggle("wrap", wrap);
+}
+
+function render(animateLast = false) {
+  sizeTiles();
+  $("modeDaily").classList.toggle("on", G.mode === "daily");
+  $("modePractice").classList.toggle("on", G.mode === "practice");
+  $("puzzleLabel").textContent = G.mode === "daily"
+    ? `Daily #${G.day} · unscramble into a famous name` : "Practice · unscramble into a famous name";
+
+  // clue / bank
+  const used = usedSet();
+  const bank = wordRow(G.bank, G.clueWords.map(w => w.length), (c, j) => {
+    const t = tile(c, used.has(j) || G.done ? "used" : "");
+    t.onclick = () => typeBank(j);
+    return t;
+  });
+  bank.id = "bank"; $("bank").replaceWith(bank);
+  $("clue").querySelector(".keys").style.display = G.done ? "none" : "";
+
+  // board
+  const board = $("board"); board.innerHTML = "";
+  const lens = G.answer.map(w => w.length);
+  const sp = spans();
+  G.guesses.forEach((g, r) => {
+    const s = score(g);
+    const last = animateLast && r === G.guesses.length - 1;
+    board.append(wordRow(g, lens, (c, i) => {
+      const t = tile(c, (s[i] ? "g" : "x") + (last ? " flip" : ""));
+      if (last) t.style.animationDelay = i * 60 + "ms";
+      return t;
+    }, w => s.slice(...sp[w]).every(Boolean) ? "solved" : ""));
+  });
+  if (!G.done) {
+    const cur = wordRow(G.slots.map(j => j === null ? "" : G.bank[j]), lens,
+      (c, i) => tile(c, isLockedSlot(i) ? "locked" : c ? "filled" : ""));
+    cur.id = "current"; board.append(cur);
+    for (let r = G.guesses.length + 1; r < MAX_GUESSES; r++) board.append(wordRow([], lens, () => tile("")));
+  }
+
+  renderHints();
+
+  // end panel
+  const end = $("end");
+  end.classList.toggle("show", G.done);
+  if (G.done) {
+    $("endTitle").textContent = G.won
+      ? ["Genius!", "Brilliant!", "Great!", "Nice!", "Good!", "Phew!"][G.guesses.length - 1]
+      : "Out of guesses";
+    $("endAnswer").textContent = `${G.clue.p} → ${G.p.name}`;
+    $("endWhy").textContent = G.clue.why;
+    $("nextBtn").textContent = G.mode === "daily" ? "Play practice" : "Next puzzle";
+  }
+}
+
+function renderHints() {
+  const ul = $("hintList"); ul.innerHTML = "";
+  const n = G.done ? G.hintTexts.length : G.hints;
+  G.hintTexts.slice(0, n).forEach(([k, v]) => {
+    const li = document.createElement("li");
+    li.innerHTML = `${k}: <b></b>`; li.querySelector("b").textContent = v; ul.append(li);
+  });
+  const btn = $("hintBtn");
+  btn.style.display = G.done ? "none" : "";
+  btn.disabled = G.hints >= G.hintTexts.length;
+  btn.textContent = btn.disabled ? "No more hints" : `Hint (${G.hintTexts.length - G.hints} left)`;
+}
+
+function shake() {
+  const r = $("current"); if (!r) return;
+  r.classList.remove("shake"); void r.offsetWidth; r.classList.add("shake");
+}
+
+function shareText() {
+  const sp = spans();
+  const head = G.mode === "daily" ? `Granama #${G.day}` : "Granama (practice)";
+  const res = `${G.won ? G.guesses.length : "X"}/${MAX_GUESSES}` + (G.hints ? ` 💡${G.hints}` : "");
+  const rows = G.guesses.map(g => {
+    const s = score(g);
+    return sp.map(([a, b]) => s.slice(a, b).map(x => x ? "🟩" : "⬜").join("")).join(" ");
+  });
+  return [`${head} ${res}`, `“${G.clue.p}”`, ...rows].join("\n");
+}
+async function share() {
+  const text = shareText();
+  try { await navigator.clipboard.writeText(text); toast("Copied to clipboard"); }
+  catch { window.prompt("Copy your result:", text); }
+}
+
+function showStats() {
+  const st = loadStats();
+  const pct = st.played ? Math.round(100 * st.won / st.played) : 0;
+  $("statsNums").innerHTML = [[st.played, "Played"], [pct, "Win %"], [st.streak, "Streak"], [st.maxStreak, "Max streak"]]
+    .map(([v, k]) => `<div><b>${v}</b><span>${k}</span></div>`).join("");
+  const max = Math.max(1, ...st.dist);
+  const cur = G.mode === "daily" && G.won ? G.guesses.length - 1 : -1;
+  $("statsDist").innerHTML = st.dist.map((n, i) =>
+    `<div>${i + 1}<i class="${i === cur ? "cur" : ""}" style="width:${8 + 88 * n / max}%">${n}</i></div>`).join("");
+  $("stats").showModal();
+}
+
+// ---------- modes ----------
+function playDaily() {
+  const d = dayNumber();
+  newGame("daily", ORDER[((d - 1) % ORDER.length + ORDER.length) % ORDER.length]);
+}
+function playPractice() {
+  let idx;
+  do idx = Math.floor(Math.random() * PUZZLES.length);
+  while (PUZZLES.length > 1 && G && idx === G.idx);
+  newGame("practice", idx, Math.floor(Math.random() * PUZZLES[idx].clues.length));
+}
+
+// ---------- wiring ----------
+$("modeDaily").onclick = playDaily;
+$("modePractice").onclick = playPractice;
+$("nextBtn").onclick = playPractice;
+$("shareBtn").onclick = share;
+$("hintBtn").onclick = revealHint;
+$("backBtn").onclick = backspace;
+$("enterBtn").onclick = submit;
+$("helpBtn").onclick = () => $("help").showModal();
+$("statsBtn").onclick = showStats;
+document.querySelectorAll("[data-close]").forEach(b => b.onclick = () => b.closest("dialog").close());
+document.addEventListener("keydown", e => {
+  if (e.ctrlKey || e.metaKey || e.altKey || document.querySelector("dialog[open]")) return;
+  if (e.key === "Enter") { e.preventDefault(); submit(); }
+  else if (e.key === "Backspace") backspace();
+  else if (/^[a-z]$/i.test(e.key)) typeLetter(e.key.toLowerCase());
+});
+window.addEventListener("resize", () => sizeTiles());
+
+playDaily();
+if (!store.get("granama-seen-help", false)) { store.set("granama-seen-help", true); $("help").showModal(); }
+</script>
+</body>
+</html>
