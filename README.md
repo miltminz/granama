@@ -213,4 +213,7 @@ $ uv run python scripts/build_wordlist.py --size 60      # sizes 35 40 50 55 60 
 To add another dictionary, build it (or drop a word list in `data/<lang>/`) and add a
 `Dictionary(...)` entry to the language in `languages.py`.
 
-SCOWL copyright: `src/granama/data/en/SCOWL-COPYRIGHT.txt`.
+## License
+
+MIT, see [LICENSE](LICENSE). The bundled SCOWL word list keeps its own copyright:
+`src/granama/data/en/SCOWL-COPYRIGHT.txt`.

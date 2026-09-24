@@ -3,6 +3,8 @@ name = "granama"
 version = "0.1.0"
 description = "Fast multi-word anagram generator"
 readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE", "src/granama/data/en/SCOWL-COPYRIGHT.txt"]
 requires-python = ">=3.12"
 dependencies = []
 
